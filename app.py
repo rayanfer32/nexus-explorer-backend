@@ -1,16 +1,11 @@
 import os
-import flask
 import requests
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, make_response
 from flask_cors import CORS, cross_origin
 import requests_cache
-from api import blockEstimatorApi
-from api import chartApi
 
 from dotenv import load_dotenv
-config = load_dotenv("local.env")
-
-print("config:", config)
+load_dotenv("local.env")
 
 app = Flask('__main__')
 cors = CORS(app)
@@ -26,41 +21,26 @@ method_requests_mapping = {
 SERVER_URL = os.getenv("SERVER_URL").rstrip('/')
 AUTH_TOKEN = os.getenv("AUTH_TOKEN")
 
-block_estimator = blockEstimatorApi.BlockEstimator()
-
 # install cache provider for requests
 requests_cache.install_cache(
-    'nexusapi_cache', backend='sqlite', expire_after=15)
+    'nexusapi_cache', backend='sqlite', expire_after=5)
 
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=method_requests_mapping.keys())
 @cross_origin()
 def proxy(path):
+    """Proxy requests to the Nexus Core."""
     if request.method == "OPTIONS":  # CORS preflight
         return _build_cors_preflight_response()
     else:
-        resp = requests.request(method=request.method, url=f'{SERVER_URL}/{path}',
-                                headers=request.headers, params=request.args, data=request.data, json=request.json)
+        resp = requests.request(method=request.method,
+                                url=f'{SERVER_URL}/{path}',
+                                headers=request.headers,
+                                params=request.args,
+                                data=request.data,
+                                json=request.json)
         return _corsify_actual_response(resp)
-
-
-@app.route('/chart')
-@cross_origin()
-def handleChartApi():
-    return chartApi.getChartData(2)
-
-
-@app.route('/blockFromTimestamp/<timestamp>')
-@cross_origin()
-def handleBlockFromTimestamp(timestamp):
-    timestamp = int(timestamp)
-    try:
-        estimated_block, error = block_estimator.findBlockFromTimestamp(
-            timestamp)
-        return {'estimatedBlock': estimated_block, "error": error}
-    except Exception as e:
-        return {'error': 'invalid timestamp'}
 
 
 def _build_cors_preflight_response():
@@ -77,9 +57,9 @@ def _corsify_actual_response(response):
 
 
 def main():
+    """Start the application."""
     app.run(host='0.0.0.0', port=8080)
 
 
 if __name__ == "__main__":
-    app.debug = True
     main()
