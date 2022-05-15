@@ -1,3 +1,4 @@
-flask-cors
 waitress
+flask-cors
+python-dotenv
 requests-cache

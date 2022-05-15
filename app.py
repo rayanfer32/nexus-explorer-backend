@@ -38,8 +38,7 @@ def proxy(path):
                                 url=f'{SERVER_URL}/{path}',
                                 headers=request.headers,
                                 params=request.args,
-                                data=request.data,
-                                json=request.json)
+                                data=request.data)
         return _corsify_actual_response(resp)
 
 
