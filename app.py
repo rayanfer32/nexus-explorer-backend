@@ -52,7 +52,7 @@ def _build_cors_preflight_response():
 
 def _corsify_actual_response(response):
     response.headers["Access-Control-Allow-Origin"] = "*"
-    return (response.raw.read(), response.status_code, response.headers.items())
+    return (response.content, response.status_code, response.headers.items())
 
 
 def main():
