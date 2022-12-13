@@ -28,7 +28,7 @@ requests_cache.install_cache(
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=method_requests_mapping.keys())
-@cross_origin()
+# @cross_origin()
 def proxy(path):
     """Proxy requests to the Nexus Core."""
     if request.method == "OPTIONS":  # CORS preflight
